@@ -3,3 +3,6 @@ uvicorn[standard]==0.32.0
 cachetools==5.5.0
 pydantic==2.9.0
 python-multipart==0.0.12
+duckdb>=1.0.0
+pyarrow>=16.0.0
+requests>=2.31.0

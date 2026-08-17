@@ -1,347 +1,106 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-slate-950: #0B0F19;
+  --color-slate-900: #111827;
+  --color-slate-850: #151D2E;
+  --color-slate-800: #1E293B;
+  --color-slate-700: #334155;
+  --color-slate-600: #475569;
+  
+  --color-neo-indigo: #6366F1;
+  --color-neo-electric: #06B6D4;
+  --color-neo-emerald: #10B981;
+  --color-neo-rose: #F43F5E;
+  --color-neo-amber: #F59E0B;
 }
 
 :root {
-  --cream: #fcfbf7;
-  --sand: #f3f0e6;
-  --zinc-950: #09090b;
-  --white: #ffffff;
-  --zinc-50: #fafafa;
-  --zinc-100: #f4f4f5;
-  --zinc-150: #e4e4e7;
-  --zinc-200: #e4e4e7;
-  --zinc-300: #d4d4d8;
-  --zinc-400: #a1a1aa;
-  --zinc-500: #71717a;
-  --zinc-600: #52525b;
-  --zinc-650: #4b5563;
-  --zinc-750: #27272a;
-  --zinc-700: #3f3f46;
-  --zinc-800: #27272a;
-  --zinc-900: #18181b;
-  --text-primary: #09090b;
-  --border-color: #09090b;
-  --card-bg: #ffffff;
-  --glass-bg: rgba(243, 240, 230, 0.85);
-  --btn-bg: #09090b;
-  --btn-text: #ffffff;
-  --invert-btn-bg: #ffffff;
-  --invert-btn-text: #09090b;
-  --shadow-color: #09090b;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-card: #ffffff;
+  --border-subtle: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --accent-indigo: #6366F1;
+  --accent-electric: #06B6D4;
 }
 
 .dark {
-  --cream: #000000;
-  --sand: #09090b;
-  --zinc-950: #ffffff;
-  --white: #121212;
-  --zinc-50: #141416;
-  --zinc-100: #18181c;
-  --zinc-150: #222226;
-  --zinc-200: #28282d;
-  --zinc-300: #3e3e46;
-  --zinc-400: #71717a;
-  --zinc-500: #a1a1aa;
-  --zinc-600: #d4d4d8;
-  --zinc-650: #e4e4e7;
-  --zinc-750: #fafafa;
-  --zinc-700: #f4f4f5;
-  --zinc-800: #fcfbf7;
-  --zinc-900: #ffffff;
-  --text-primary: #ffffff;
-  --border-color: #ffffff;
-  --card-bg: #121212;
-  --glass-bg: rgba(0, 0, 0, 0.9);
-  --btn-bg: #ffffff;
-  --btn-text: #000000;
-  --invert-btn-bg: #121212;
-  --invert-btn-text: #ffffff;
-  --shadow-color: #ffffff;
+  --bg-primary: #0B0F19;
+  --bg-secondary: #111827;
+  --bg-card: #151D2E;
+  --border-subtle: #1E293B;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
 }
 
-/* Custom Neo-Brutalist utilities using variables */
-.bg-cream {
-  background-color: var(--cream);
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-.bg-sand {
-  background-color: var(--sand);
+/* ── Custom Animations ── */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
 }
 
-.bg-white {
-  background-color: var(--card-bg) !important;
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
-.bg-zinc-50 {
-  background-color: var(--zinc-50) !important;
+.animate-pulse-glow {
+  animation: pulseGlow 6s ease-in-out infinite;
 }
 
-.bg-zinc-100 {
-  background-color: var(--zinc-100) !important;
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 35s linear infinite;
 }
 
-.bg-zinc-200 {
-  background-color: var(--zinc-200) !important;
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
-/* Button & Inverted styles for Neo-brutalism in Dark mode */
-.bg-zinc-950 {
-  background-color: var(--btn-bg) !important;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.bg-zinc-950.text-white {
-  color: var(--btn-text) !important;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.bg-zinc-950 .text-white {
-  color: var(--btn-text) !important;
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
 
-.bg-zinc-950 .text-rose-400 {
-  color: #f43f5e !important;
-}
-
-.bg-zinc-950 svg {
-  color: var(--btn-text) !important;
-}
-
-.bg-white.text-zinc-950 {
-  background-color: var(--invert-btn-bg) !important;
-  color: var(--invert-btn-text) !important;
-}
-
-.bg-white .text-zinc-950 {
-  color: var(--invert-btn-text) !important;
-}
-
-/* Text overrides */
-.text-zinc-950 {
-  color: var(--text-primary) !important;
-}
-
-.text-zinc-900 {
-  color: var(--zinc-900) !important;
-}
-
-.text-zinc-800 {
-  color: var(--zinc-800) !important;
-}
-
-.text-zinc-700 {
-  color: var(--zinc-700) !important;
-}
-
-.text-zinc-600 {
-  color: var(--zinc-600) !important;
-}
-
-.text-zinc-650 {
-  color: var(--zinc-650) !important;
-}
-
-.text-zinc-500 {
-  color: var(--zinc-500) !important;
-}
-
-.text-zinc-400 {
-  color: var(--zinc-400) !important;
-}
-
-/* Borders */
-.border-zinc-950 {
-  border-color: var(--border-color) !important;
-}
-
-.border-zinc-950\/20 {
-  border-color: rgba(120, 120, 120, 0.25) !important;
-}
-
-.border-zinc-200 {
-  border-color: var(--zinc-200) !important;
-}
-
-.border-bold {
-  border: 3px solid var(--border-color) !important;
-}
-
-.border-bold-thin {
-  border: 1.5px solid var(--border-color) !important;
-}
-
-/* Shadows */
-.shadow-hard {
-  box-shadow: 4px 4px 0px 0px var(--border-color) !important;
-}
-
-.shadow-hard-sm {
-  box-shadow: 2px 2px 0px 0px var(--border-color) !important;
-}
-
-.shadow-hard-lg {
-  box-shadow: 8px 8px 0px 0px var(--border-color) !important;
-}
-
-/* Selection & Scrollbar styles */
-.selection\:bg-rose-500::selection {
-  background-color: #f43f5e !important;
-}
-
-/* Glass header background */
-.bg-sand\/80 {
-  background-color: var(--glass-bg) !important;
-}
-.bg-white\/95 {
-  background-color: var(--glass-bg) !important;
-}
-
-/* ═══════════════════════════════════════════════════════════
-    DARK MODE COLOR HARMONIZATION (REDUCING COLOR CLUTTER)
-    ═══════════════════════════════════════════════════════════ */
-
-/* 1. Primary Accents (Canary Yellow) for interactive/important items */
-.dark .text-rose-600,
-.dark .text-rose-500,
-.dark .text-rose-400,
-.dark .text-amber-500,
-.dark .text-amber-600,
-.dark .text-yellow-500,
-.dark .text-yellow-600,
-.dark .text-rose-800 {
-  color: #ffde43 !important; /* Gumroad Canary Yellow */
-}
-
-/* 2. Secondary Accents (Stark White) for other informational items */
-.dark .text-emerald-600,
-.dark .text-emerald-500,
-.dark .text-blue-500,
-.dark .text-blue-600,
-.dark .text-indigo-500,
-.dark .text-indigo-600,
-.dark .text-violet-500,
-.dark .text-violet-600,
-.dark .text-emerald-800 {
-  color: #ffffff !important; /* Elegant stark white */
-}
-
-/* 3. Hover elements */
-.dark .hover\:text-rose-600:hover,
-.dark .hover\:text-rose-500:hover,
-.dark .hover\:text-amber-500:hover,
-.dark [class*="hover:text-rose-600"]:hover,
-.dark [class*="hover:text-rose-500"]:hover {
-  color: #ffde43 !important;
-}
-
-/* 4. Active Background fills (Fills bar charts, KPI indicators, badges) */
-.dark .bg-rose-600,
-.dark .bg-rose-500,
-.dark .bg-amber-500,
-.dark .bg-amber-600,
-.dark .bg-yellow-500,
-.dark .bg-yellow-600 {
-  background-color: #ffde43 !important; /* Primary Brand Yellow */
-  color: #000000 !important;
-}
-
-.dark .bg-rose-600 svg,
-.dark .bg-rose-500 svg,
-.dark .bg-amber-500 svg {
-  color: #000000 !important;
-}
-
-.dark .bg-emerald-600,
-.dark .bg-emerald-500,
-.dark .bg-blue-500,
-.dark .bg-blue-600,
-.dark .bg-indigo-600,
-.dark .bg-violet-600 {
-  background-color: #ffffff !important; /* Crisp pure white */
-  color: #000000 !important;
-}
-
-.dark .bg-emerald-600 svg,
-.dark .bg-emerald-500 svg,
-.dark .bg-blue-500 svg,
-.dark .bg-blue-600 svg {
-  color: #000000 !important;
-}
-
-/* 5. Light Transparent Background Tints (Removes the muddy rainbow look) */
-.dark .bg-rose-50,
-.dark .bg-rose-100,
-.dark .bg-amber-100,
-.dark .bg-yellow-100 {
-  background-color: rgba(255, 222, 67, 0.12) !important; /* Soft Canary Yellow tint */
-  color: #ffde43 !important;
-  border-color: rgba(255, 222, 67, 0.25) !important;
-}
-
-.dark .bg-emerald-50,
-.dark .bg-emerald-100,
-.dark .bg-blue-50,
-.dark .bg-blue-100,
-.dark .bg-indigo-50,
-.dark .bg-indigo-100 {
-  background-color: rgba(255, 255, 255, 0.08) !important; /* Soft white/gray tint */
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-}
-
-/* 6. Border Overrides */
-.dark .border-rose-600,
-.dark .border-rose-500,
-.dark .border-amber-500 {
-  border-color: #ffde43 !important;
-}
-
-.dark .border-emerald-600,
-.dark .border-blue-500,
-.dark .border-indigo-600 {
-  border-color: #ffffff !important;
-}
-
-/* 7. Recharts Chart Overrides (Dynamic theme adaptation for SVGs) */
-.dark .recharts-area-monotone {
-  stroke: #ffde43 !important;
-}
-.dark .recharts-curve {
-  stroke: #ffde43 !important;
-}
-.dark .recharts-area {
-  fill: #ffde43 !important;
-  fill-opacity: 0.15 !important;
-}
-.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background-color: #09090b !important;
-  border: 2px solid #ffde43 !important;
-  color: #ffffff !important;
-  box-shadow: 4px 4px 0px 0px #09090b !important;
-}
-
-/* Custom scrollbars for Gumroad dark mode style */
-.dark ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.dark ::-webkit-scrollbar-track {
-  background: #000000;
-}
 .dark ::-webkit-scrollbar-thumb {
-  background: #242429;
-  border-radius: 4px;
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #ffde43;
+  background: #334155;
 }
 
-/* Selection */
-.dark .selection\:bg-rose-500::selection,
-.dark ::selection {
-  background-color: #ffde43 !important;
-  color: #000000 !important;
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
