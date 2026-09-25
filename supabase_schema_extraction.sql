@@ -1,7 +1,11 @@
 -- ============================================================================
--- SUPABASE SCHEMA EXTRACTION SCRIPT
--- Target: 'public' schema — TechJob Analytics SaaS (Morocco)
--- Run in: Supabase SQL Editor (https://supabase.com/dashboard → SQL Editor)
+-- SUPABASE SCHEMA EXTRACTION (MIGRATION TOOLING ONLY)
+-- ============================================================================
+-- Purpose: Extract and document existing Supabase schema structure
+-- Usage: Run in Supabase SQL Editor to document database state
+-- Note: This is NOT part of the production runtime architecture
+-- Runtime: DuckDB + Parquet (see backend/db.py)
+-- Migration Tooling: See MIGRATION.md in repository root
 -- ============================================================================
 -- This script produces 4 result sets. Run them one at a time or all at once.
 -- Each query is self-contained and labelled.

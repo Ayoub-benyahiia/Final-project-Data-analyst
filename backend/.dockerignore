@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+test-results/
+*.cover
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+docs/
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Data (now bundled in Dockerfile, exclude from context)
+projet-data-maroc-tech/

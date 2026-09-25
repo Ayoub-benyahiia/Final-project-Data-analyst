@@ -16,6 +16,14 @@ __pycache__/
 .venv/
 venv/
 
-# IDE
+# Test artifacts
+.pytest_cache/
+test-results/
+.coverage
+htmlcov/
+*.cover
+
+# IDE and OS
 .vscode/
 .idea/
+nul

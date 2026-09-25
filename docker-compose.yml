@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: techjob_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+      - ENVIRONMENT=production
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./techjob-analytics-react-router
+      dockerfile: Dockerfile
+    container_name: techjob_frontend
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped

@@ -9,11 +9,12 @@ export default defineConfig({
     timeout: 10000,
   },
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://localhost:5173",
     trace: "on-first-retry",
     headless: true,
     viewport: { width: 1440, height: 900 },
   },
+
   projects: [
     {
       name: "chromium",

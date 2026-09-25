@@ -1,0 +1,122 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Python linting
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python dependencies
+        run: |
+          cd backend
+          pip install ruff
+      - name: Run Ruff linting
+        run: |
+          cd backend
+          ruff check .
+      
+      # TypeScript type checking
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Node dependencies
+        run: |
+          cd techjob-analytics-react-router
+          npm ci
+      - name: Run TypeScript type check
+        run: |
+          cd techjob-analytics-react-router
+          npm run typecheck
+      - name: Run ESLint
+        run: |
+          cd techjob-analytics-react-router
+          npm run lint
+
+  test-data-and-backend:
+    name: Test Data & Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Python dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+      
+      - name: Run pytest
+        run: |
+          pytest tests/ -v --tb=short --disable-warnings
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+
+  build-check:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Backend Docker build
+      - name: Build backend Docker image
+        run: |
+          docker build -t techjob-backend-test ./backend
+      
+      # Frontend Vite build
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Node dependencies
+        run: |
+          cd techjob-analytics-react-router
+          npm ci
+      - name: Build frontend
+        run: |
+          cd techjob-analytics-react-router
+          npm run build
+      
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: techjob-analytics-react-router/dist/
+
+  deploy-trigger:
+    name: Deploy to Production
+    needs: [lint-and-typecheck, test-data-and-backend, build-check]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Trigger Render deployment
+        run: |
+          # Use Render API or webhook to trigger deployment
+          echo "Triggering Render backend deployment"
+          # Add actual Render deployment trigger here
+      
+      - name: Trigger Vercel deployment
+        run: |
+          # Use Vercel CLI or webhook to trigger deployment
+          echo "Triggering Vercel frontend deployment"
+          # Add actual Vercel deployment trigger here

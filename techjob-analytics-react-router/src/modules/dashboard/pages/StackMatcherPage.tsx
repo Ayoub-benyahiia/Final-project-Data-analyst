@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { KPICard } from "@/components/ui/KpiCard";
 import { ChartCard } from "@/components/ui/ChartCard";
@@ -10,14 +8,14 @@ import { STACK_PRESETS, TECHNOLOGIES } from "@/lib/data";
 import { useStackMatcher, useSkillsList } from "@/modules/dashboard/hooks/useMarketData";
 import { useFilters } from "@/modules/dashboard/hooks/useFilters";
 import { cn } from "@/lib/utils";
-import { Check, Layers, Coffee, Box, BarChart3, Plus } from "lucide-react";
+import { Check, Layers, Coffee, Box, BarChart3, Plus, X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const presetIcons: Record<string, React.ReactNode> = {
-  MERN: <Layers className="h-3.5 w-3.5" />,
-  "Java Spring": <Coffee className="h-3.5 w-3.5" />,
-  ".NET": <Box className="h-3.5 w-3.5" />,
-  "Python Data": <BarChart3 className="h-3.5 w-3.5" />,
+  MERN: <Layers className="h-3.5 w-3.5 text-[#4e4d4d]" />,
+  "Java Spring": <Coffee className="h-3.5 w-3.5 text-[#4e4d4d]" />,
+  ".NET": <Box className="h-3.5 w-3.5 text-[#4e4d4d]" />,
+  "Python Data": <BarChart3 className="h-3.5 w-3.5 text-[#4e4d4d]" />,
 };
 
 const formatCompactK = (val: number | string) => {
@@ -57,24 +55,22 @@ export default function StackMatcherPage() {
 
   if (isPending) {
     return (
-      <div className="space-y-4 animate-pulse">
-        <div className="mb-1">
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Stack Matcher</h1>
-          <p className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-            Analyze your tech stack against 10,782+ Moroccan IT job postings.
-          </p>
+      <div className="space-y-8 animate-pulse font-mono">
+        <div className="space-y-2">
+          <div className="h-9 w-64 rounded-full bg-[#cecac8]/40" />
+          <div className="h-4 w-96 rounded-full bg-[#cecac8]/20" />
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <KPICardSkeleton key={i} />
           ))}
         </div>
-        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-3.5">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="col-span-12 lg:col-span-2 space-y-6">
             <ChartCardSkeleton />
             <ChartCardSkeleton />
           </div>
-          <div className="space-y-3.5">
+          <div className="col-span-12 lg:col-span-1 space-y-6">
             <ChartCardSkeleton />
             <ChartCardSkeleton />
           </div>
@@ -93,23 +89,33 @@ export default function StackMatcherPage() {
   const companies = data?.matching_companies || [];
 
   return (
-    <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
-      <div className="mb-1">
-        <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Stack Matcher</h1>
-        <p className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-          Analyze your tech stack against 10,782+ Moroccan IT job postings.
-        </p>
+    <div className="space-y-8 animate-fade-in font-mono">
+      {/* 01 — EDITORIAL PAGE HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-[#cecac8] pb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-2 w-2 rounded-full bg-[#2b59d1]" />
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[#797776]">
+              Stack Compatibility Intelligence
+            </span>
+          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#242424] tracking-[-0.02em]">
+            Stack Matcher & Skill Gap
+          </h1>
+          <p className="mt-1 font-mono text-xs sm:text-sm text-[#4e4d4d] max-w-2xl leading-relaxed">
+            Evaluate tech stack compatibility against 10,782+ Moroccan IT job postings in real-time.
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      {/* 02 — 3 KPI CARDS */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         <KPICard
           data={{
-            label: "Match Score",
+            label: "Market Compatibility",
             value: `${matchScore}%`,
-            change: data ? data.market_match_rate_pct : 0,
-            changeLabel: "market coverage",
+            changeLabel: "market alignment",
             icon: "Target",
-            color: "indigo",
           }}
           variant="hero"
         />
@@ -117,41 +123,45 @@ export default function StackMatcherPage() {
           data={{
             label: "Top Missing Booster",
             value: topMissingSkill,
+            changeLabel: "highest incremental ROI",
             icon: "Zap",
-            color: "amber",
           }}
         />
         <KPICard
           data={{
             label: "Top Hiring Hub",
             value: bestCity,
+            changeLabel: "primary regional demand",
             icon: "MapPin",
-            color: "cyan",
           }}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3 items-start">
+      {/* 03 — MAIN INTERACTION GRID */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 items-start">
         {/* Left Column (2 spans) */}
-        <div className="lg:col-span-2 space-y-3.5">
-          {/* Stack Selection Card */}
-          <div className="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white dark:bg-[#1E1F24] p-4 sm:p-5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm transition-all">
-            <div className="mb-2.5 flex items-center justify-between">
+        <div className="col-span-12 lg:col-span-2 space-y-6">
+          {/* Tech Stack Selector Card */}
+          <div className="rounded-[28px] sm:rounded-[40px] border border-[#cecac8] bg-[#f6f3f1] p-6 sm:p-8">
+            <div className="mb-6 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">Your Tech Stack</h3>
-                <p className="text-[11px] font-medium text-slate-400">
-                  Select technologies or apply an industry preset
+                <h3 className="font-serif text-xl sm:text-2xl font-normal text-[#242424] tracking-[-0.02em]">
+                  Your Tech Stack
+                </h3>
+                <p className="font-mono text-xs sm:text-sm text-[#4e4d4d] mt-1">
+                  Select technologies or apply an industry standard preset
                 </p>
               </div>
             </div>
 
             {/* Presets Pills */}
-            <div className="mb-2.5 flex flex-wrap gap-1.5">
+            <div className="mb-5 flex flex-wrap gap-2">
               {STACK_PRESETS.map((preset) => (
                 <button
                   key={preset.name}
+                  type="button"
                   onClick={() => applyPreset(preset)}
-                  className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#161719] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition-all hover:border-slate-400 dark:hover:border-[#D4F84B] hover:bg-slate-100"
+                  className="flex items-center gap-2 rounded-full border border-[#cecac8] bg-[#f6f3f1] px-4 py-1.5 text-xs font-mono text-[#4e4d4d] transition-all hover:border-[#242424] hover:text-[#242424]"
                 >
                   {presetIcons[preset.name]}
                   <span>{preset.name}</span>
@@ -160,21 +170,22 @@ export default function StackMatcherPage() {
             </div>
 
             {/* Technology Chips Selection */}
-            <div className="mb-2.5 flex flex-wrap gap-1 max-h-36 overflow-y-auto custom-scrollbar pr-1">
-              {availableTechs.slice(0, 36).map((tech) => {
+            <div className="mb-5 flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar pr-1">
+              {availableTechs.slice(0, 40).map((tech) => {
                 const isSelected = selectedTechs.includes(tech);
                 return (
                   <button
                     key={tech}
+                    type="button"
                     onClick={() => toggleTech(tech)}
                     className={cn(
-                      "flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] transition-all",
+                      "flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-mono transition-all select-none",
                       isSelected
-                        ? "bg-slate-900 dark:bg-[#D4F84B] text-white dark:text-[#161719] font-bold shadow-sm"
-                        : "border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#161719] text-slate-600 dark:text-slate-400 font-medium hover:border-slate-300 hover:bg-slate-50"
+                        ? "bg-[#cfdaf5] text-[#2b59d1] font-medium border border-[#a0b5eb]"
+                        : "border border-[#cecac8] bg-[#f6f3f1] text-[#4e4d4d] hover:border-[#242424] hover:text-[#242424]"
                     )}
                   >
-                    {isSelected && <Check className="h-2.5 w-2.5 stroke-[3]" />}
+                    {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
                     <span>{tech}</span>
                   </button>
                 );
@@ -182,26 +193,27 @@ export default function StackMatcherPage() {
             </div>
 
             {/* Selected Active Stack Tags */}
-            <div className="rounded-lg border border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-[#161719] p-2.5">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                Active Stack ({selectedTechs.length} skills)
+            <div className="rounded-[28px] border border-[#cecac8] bg-[#f6f3f1] p-5">
+              <div className="text-[11px] font-mono uppercase tracking-wider text-[#797776] mb-3">
+                Active Stack ({selectedTechs.length} skills selected)
               </div>
               {selectedTechs.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No technologies selected. Click skills above to match.</p>
+                <p className="text-xs font-mono text-[#797776] italic">No technologies selected. Click skills above to match.</p>
               ) : (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-2">
                   {selectedTechs.map((tech) => (
                     <span
                       key={tech}
-                      className="inline-flex items-center gap-1 rounded-md bg-slate-200/80 dark:bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-slate-800 dark:text-slate-100"
+                      className="inline-flex items-center gap-2 rounded-full bg-[#f6f3f1] border border-[#cecac8] px-3.5 py-1.5 text-xs font-mono text-[#242424]"
                     >
                       <span>{tech}</span>
                       <button
+                        type="button"
                         onClick={() => toggleTech(tech)}
-                        className="hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-0.5 text-slate-400"
+                        className="hover:text-rose-600 transition-colors text-[#797776]"
                         title={`Remove ${tech}`}
                       >
-                        ×
+                        <X className="h-3 w-3" />
                       </button>
                     </span>
                   ))}
@@ -214,48 +226,50 @@ export default function StackMatcherPage() {
           <ChartCard
             title="Missing Skills ROI Booster"
             subtitle="Click any booster skill to add it directly to your stack"
-            height={210}
+            height={220}
           >
             {missingRoi.length === 0 ? (
               <EmptyState
                 title="No booster skills needed"
-                description="Your stack covers key requirements for target postings."
+                description="Your stack covers the core requirements for target postings."
                 className="h-full border-none p-3"
               />
             ) : (
-              <div className="space-y-1.5 overflow-y-auto custom-scrollbar max-h-[195px] pr-1">
+              <div className="space-y-2 overflow-y-auto custom-scrollbar max-h-[200px] pr-1 font-mono">
                 {missingRoi.slice(0, 6).map((item) => (
                   <div
                     key={item.skill}
-                    className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors group"
+                    className="flex items-center gap-3 p-2 rounded-full hover:bg-[#cecac8]/20 transition-colors group border border-transparent"
                   >
                     <button
+                      type="button"
                       onClick={() => addMissingSkill(item.skill)}
-                      className="flex items-center gap-1.5 text-left w-32 truncate"
+                      className="flex items-center gap-2 text-left w-44 truncate"
                       title={item.skill}
                     >
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 group-hover:bg-slate-900 group-hover:text-[#D4F84B] transition-all flex-shrink-0">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#242424] text-[#f6f3f1] group-hover:bg-[#2b59d1] transition-colors flex-shrink-0">
                         <Plus className="h-3 w-3 stroke-[2.5]" />
                       </span>
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-[#D4F84B] transition-colors truncate">
+                      <span className="text-xs font-mono text-[#242424] transition-colors truncate">
                         {item.skill}
                       </span>
                     </button>
 
-                    <span className="text-[10px] font-medium text-slate-400 w-20 truncate">{item.category}</span>
+                    <span className="text-[11px] font-mono text-[#797776] w-28 truncate">{item.category}</span>
 
                     <div className="flex-1">
-                      <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-[#cecac8]/40 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                          className="h-full rounded-full bg-[#2b59d1] transition-all duration-500"
                           style={{ width: `${Math.min(100, item.boost_pct * 2.5)}%` }}
                         />
                       </div>
                     </div>
 
                     <button
+                      type="button"
                       onClick={() => addMissingSkill(item.skill)}
-                      className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.2 text-[11px] font-extrabold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 transition-colors"
+                      className="rounded-full bg-[#a7fccd]/40 border border-[#a7fccd] px-3 py-0.5 text-[10px] font-mono text-[#242424] hover:bg-[#a7fccd] transition-colors"
                       title={`Click to add ${item.skill}`}
                     >
                       +{item.boost_pct}%
@@ -268,18 +282,21 @@ export default function StackMatcherPage() {
         </div>
 
         {/* Right Column (1 span) */}
-        <div className="space-y-3.5">
-          <div className="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white dark:bg-[#1E1F24] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm text-center transition-all">
-            <h3 className="mb-1.5 text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">Compatibility Score</h3>
-            <div className="relative mx-auto mb-1.5 h-28 w-28">
+        <div className="col-span-12 lg:col-span-1 space-y-6">
+          {/* Compatibility Score Radial Dial on Periwinkle Card */}
+          <div className="rounded-[28px] sm:rounded-[40px] border border-[#a0b5eb] bg-[#cfdaf5] p-6 text-center text-[#242424]">
+            <h3 className="mb-3 font-serif text-lg font-normal tracking-[-0.02em] text-[#242424]">
+              Compatibility Score
+            </h3>
+            <div className="relative mx-auto mb-3 h-28 w-28">
               <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-                <circle cx="60" cy="60" r="46" fill="none" stroke="#E2E8F0" strokeWidth="8" />
+                <circle cx="60" cy="60" r="46" fill="none" stroke="#f6f3f1" strokeWidth="8" />
                 <circle
                   cx="60"
                   cy="60"
                   r="46"
                   fill="none"
-                  stroke="#161719"
+                  stroke="#2b59d1"
                   strokeWidth="8"
                   strokeLinecap="round"
                   strokeDasharray={`${(matchScore * 289) / 100} 289`}
@@ -287,54 +304,55 @@ export default function StackMatcherPage() {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tabular-nums">{matchScore}%</span>
+                <span className="font-serif text-3xl font-normal text-[#242424] tabular-nums">{matchScore}%</span>
               </div>
             </div>
-            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-normal">
+            <p className="font-mono text-xs text-[#4e4d4d] leading-relaxed">
               {matchScore >= 75
-                ? "Excellent market alignment! High volume of matching openings."
+                ? "High market alignment across active postings."
                 : matchScore >= 50
-                ? "Strong foundation. Add complementary skills to expand reach."
-                : "Specialized stack. Consider pairing with high-volume companions."}
+                ? "Solid foundation. Add companion booster skills to expand reach."
+                : "Specialized profile. Consider pairing with high-volume technologies."}
             </p>
           </div>
 
-          <ChartCard title="Seniority Distribution" subtitle="Matching jobs across experience tiers" height={135}>
+          {/* Seniority Distribution Chart */}
+          <ChartCard title="Seniority Distribution" subtitle="Matching openings across tiers" height={145}>
             {seniorityData.length === 0 ? (
               <EmptyState className="h-full border-none p-3" />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={seniorityData} margin={{ top: 0, right: 10, left: -15, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: "#64748b" }} axisLine={false} tickLine={false} />
-                  <YAxis tickFormatter={formatCompactK} tick={{ fontSize: 9.5, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={30} />
+                <BarChart data={seniorityData} margin={{ top: 0, right: 10, left: -5, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#cecac8" strokeOpacity={0.6} vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#797776", fontFamily: "'ABC Diatype Mono', monospace" }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={formatCompactK} tick={{ fontSize: 10, fill: "#797776", fontFamily: "'ABC Diatype Mono', monospace" }} axisLine={false} tickLine={false} width={36} />
                   <Tooltip content={<CustomChartTooltip suffix="jobs" />} />
-                  <Bar dataKey="value" fill="#6366F1" radius={[3, 3, 0, 0]} barSize={16} />
+                  <Bar dataKey="value" fill="#242424" radius={[9999, 9999, 0, 0]} barSize={18} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </ChartCard>
 
-          {/* Matching Companies — Clean rows with tooltip and no text clipping */}
-          <ChartCard title="Matching Companies" subtitle="Top hiring employers for your stack" height={145}>
+          {/* Top Matching Companies */}
+          <ChartCard title="Top Matching Employers" subtitle="Companies hiring for this stack" height={155}>
             {companies.length === 0 ? (
               <EmptyState className="h-full border-none p-3" />
             ) : (
-              <div className="space-y-1.5 overflow-y-auto custom-scrollbar max-h-[130px] pr-1">
+              <div className="space-y-3 overflow-y-auto custom-scrollbar max-h-[140px] pr-1 font-mono">
                 {companies.slice(0, 6).map((company) => (
                   <div key={company.name} className="flex items-center gap-2" title={`${company.name}: ${company.count} postings`}>
-                    <div className="w-28 text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate">{company.name}</div>
+                    <div className="w-28 text-xs font-mono text-[#242424] truncate">{company.name}</div>
                     <div className="flex-1">
-                      <div className="h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-[#cecac8]/30 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-cyan-500 transition-all duration-500"
+                          className="h-full rounded-full bg-[#2b59d1] transition-all duration-500"
                           style={{
                             width: `${Math.min(100, Math.max(15, company.count * 8))}%`,
                           }}
                         />
                       </div>
                     </div>
-                    <span className="w-10 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                    <span className="w-8 text-right text-[11px] font-mono text-[#4e4d4d]">
                       {company.count}
                     </span>
                   </div>
@@ -347,3 +365,4 @@ export default function StackMatcherPage() {
     </div>
   );
 }
+

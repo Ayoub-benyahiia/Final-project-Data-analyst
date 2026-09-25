@@ -1,5 +1,3 @@
-import React from "react";
-
 interface CustomChartTooltipProps {
   active?: boolean;
   payload?: Array<{
@@ -26,7 +24,15 @@ export function CustomChartTooltip({
   if (!active || !payload || !payload.length) return null;
 
   const item = payload[0];
-  const title = label || item.name || item.payload?.name || item.payload?.city || item.payload?.skill || item.payload?.sector || "";
+  const title =
+    label ||
+    item.name ||
+    item.payload?.name ||
+    item.payload?.city ||
+    item.payload?.skill ||
+    item.payload?.sector ||
+    item.payload?.level ||
+    "";
   const rawValue = item.value;
   const numValue = typeof rawValue === "number" ? rawValue : Number(rawValue);
 
@@ -37,22 +43,23 @@ export function CustomChartTooltip({
     : String(rawValue);
 
   return (
-    <div className="rounded-lg border border-white/[0.1] bg-[#161719] text-white px-2.5 py-1.5 shadow-xl backdrop-blur-md transition-all select-none">
-      {title && <div className="text-[10px] font-medium text-slate-400 mb-0.5">{title}</div>}
-      <div className="flex items-center gap-1.5">
+    <div className="rounded-2xl border border-[#cecac8] bg-[#f6f3f1] text-[#242424] px-4 py-3 shadow-ambient select-none font-mono">
+      {title && <div className="text-[11px] text-[#797776] mb-1 uppercase tracking-wider">{title}</div>}
+      <div className="flex items-center gap-2">
         <div
-          className="h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: item.color || "#D4F84B" }}
+          className="h-2 w-2 rounded-full"
+          style={{ backgroundColor: item.color || "#2b59d1" }}
         />
-        <div className="text-xs font-extrabold text-white tracking-tight tabular-nums">
+        <div className="text-xs font-medium text-[#242424] tracking-tight tabular-nums">
           {formattedValue}
         </div>
       </div>
       {item.payload?.pct !== undefined && (
-        <div className="text-[9px] font-medium text-slate-400 mt-0.5">
-          Share: <span className="font-bold text-[#D4F84B]">{item.payload.pct}%</span>
+        <div className="text-[11px] text-[#4e4d4d] mt-1.5 border-t border-[#cecac8]/60 pt-1">
+          Share: <span className="font-medium text-[#2b59d1]">{item.payload.pct}%</span>
         </div>
       )}
     </div>
   );
 }
+

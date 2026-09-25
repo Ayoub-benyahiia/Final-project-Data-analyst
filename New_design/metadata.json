@@ -1,6 +1,0 @@
-{
-  "name": "TechJob Analytics",
-  "description": "Premium data intelligence platform and dashboard for the Moroccan tech job market.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

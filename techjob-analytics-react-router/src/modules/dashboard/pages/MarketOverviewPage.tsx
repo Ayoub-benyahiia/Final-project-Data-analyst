@@ -1,5 +1,3 @@
-"use client";
-
 import { KPICard } from "@/components/ui/KpiCard";
 import { ChartCard } from "@/components/ui/ChartCard";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -23,7 +21,8 @@ import {
   Bar,
 } from "recharts";
 
-const DONUT_COLORS = ["#161719", "#10B981", "#06B6D4", "#F59E0B", "#6366F1", "#EC4899", "#8B5CF6", "#F43F5E"];
+// Restrained, premium chart palette matching DESIGN.md
+const DONUT_COLORS = ["#2b59d1", "#242424", "#a0b5eb", "#ff9473", "#ecda98", "#797776"];
 
 const formatCompactK = (val: number | string) => {
   const num = typeof val === "number" ? val : parseFloat(val);
@@ -33,7 +32,7 @@ const formatCompactK = (val: number | string) => {
   return String(num);
 };
 
-const truncateLabel = (val: string, maxLen = 20) => {
+const truncateLabel = (val: string, maxLen = 22) => {
   if (typeof val !== "string") return String(val);
   return val.length > maxLen ? `${val.slice(0, maxLen - 2)}…` : val;
 };
@@ -47,78 +46,116 @@ export default function MarketOverviewPage() {
 
   if (isPending) {
     return (
-      <div className="space-y-4 animate-pulse">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="space-y-8 animate-pulse font-mono">
+        <div className="space-y-2">
+          <div className="h-9 w-64 rounded-full bg-[#cecac8]/40" />
+          <div className="h-4 w-96 rounded-full bg-[#cecac8]/20" />
+        </div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
             <KPICardSkeleton key={i} />
           ))}
         </div>
-        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <ChartCardSkeleton key={i} />
-          ))}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="col-span-12 lg:col-span-8"><ChartCardSkeleton /></div>
+          <div className="col-span-12 lg:col-span-4"><ChartCardSkeleton /></div>
+          <div className="col-span-12 lg:col-span-4"><ChartCardSkeleton /></div>
+          <div className="col-span-12 lg:col-span-3"><ChartCardSkeleton /></div>
+          <div className="col-span-12 lg:col-span-5"><ChartCardSkeleton /></div>
         </div>
       </div>
     );
   }
 
-  // Format 5 KPI cards from live Market Pulse (Ground-truth DuckDB Star Schema)
+  // Ground-truth KPI metrics from DuckDB OLAP engine
   const kpis: KPIData[] = pulseData
     ? [
         {
-          label: "Total Jobs",
+          label: "Total Job Postings",
           value: pulseData.total_jobs.toLocaleString(),
-          change: 12.5,
-          changeLabel: "verified postings",
+          changeLabel: "aggregated records",
           icon: "Briefcase",
-          color: "indigo",
         },
         {
-          label: "Total Companies",
+          label: "Active Employers",
           value: pulseData.total_companies.toLocaleString(),
-          change: 8.4,
-          changeLabel: "active employers",
+          changeLabel: "hiring organizations",
           icon: "Building2",
-          color: "amber",
         },
         {
-          label: "Total Cities",
+          label: "Regional Coverage",
           value: `${pulseData.total_cities} Cities`,
-          change: 5.2,
-          changeLabel: "Moroccan hubs",
+          changeLabel: "Moroccan tech hubs",
           icon: "MapPin",
-          color: "cyan",
         },
         {
           label: "Remote Flexibility",
           value: `${pulseData.remote_flexibility_pct}%`,
-          change: 18.4,
-          changeLabel: "remote or hybrid",
+          changeLabel: "hybrid / remote",
           icon: "Zap",
-          color: "emerald",
         },
         {
           label: "Avg. Experience",
-          value: `${pulseData.avg_experience_years} Years`,
-          change: 2.1,
-          changeLabel: "market average",
+          value: `${pulseData.avg_experience_years.toFixed(1)} Years`,
+          changeLabel: "required seniority",
           icon: "GraduationCap",
-          color: "rose",
         },
       ]
     : [];
 
   const contracts = overviewData?.contract_distribution || [];
   const trend = overviewData?.yearly_trend.map((t) => ({ name: String(t.year), value: t.count })) || [];
-  const regional = overviewData?.regional_hubs.map((r) => ({ name: r.city, value: r.count })) || [];
+  const regional = overviewData?.regional_hubs.map((r) => ({
+    name: r.city,
+    value: r.count,
+  })) || [];
   const education = overviewData?.education_levels.map((e) => ({ name: e.level, value: e.count })) || [];
-  const skills = overviewData?.top_technologies.map((t) => ({ name: t.name, value: t.count })) || [];
+  const skills = overviewData?.top_technologies.map((t) => ({
+    name: t.name,
+    value: t.count,
+  })) || [];
 
   return (
-    <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
-      {/* 5 KPI Cards Row with Hero Dark Variant on 1st Card */}
+    <div className="space-y-8 animate-fade-in font-mono">
+      {/* 01 — EDITORIAL PAGE HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-[#cecac8] pb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-2 w-2 rounded-full bg-[#2b59d1]" />
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[#797776]">
+              Market Intelligence Platform
+            </span>
+          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#242424] tracking-[-0.02em]">
+            Market Overview
+          </h1>
+          <p className="mt-1 font-mono text-xs sm:text-sm text-[#4e4d4d] max-w-2xl leading-relaxed">
+            Morocco's technology employment market, decoded through{" "}
+            <span className="text-[#242424] font-medium">
+              {pulseData?.total_jobs.toLocaleString() || "10,782"}+ job postings
+            </span>
+            .
+          </p>
+        </div>
+
+        {/* Metadata Chips */}
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto font-mono">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#cecac8] bg-[#f6f3f1] px-4 py-1.5 text-xs text-[#242424]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#a7fccd] border border-[#242424]/30" />
+            Live Market Feed
+          </span>
+          <span className="inline-flex items-center rounded-full border border-[#cecac8] bg-[#f6f3f1] px-4 py-1.5 text-xs text-[#242424]">
+            {pulseData?.total_cities || 27} Cities
+          </span>
+          <span className="inline-flex items-center rounded-full border border-[#cecac8] bg-[#f6f3f1] px-4 py-1.5 text-xs text-[#242424]">
+            {pulseData?.total_companies.toLocaleString() || "2,767"} Employers
+          </span>
+        </div>
+      </div>
+
+      {/* 02 — ASYMMETRIC KPI SECTION */}
       {kpis.length > 0 ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
           {kpis.map((kpi, index) => (
             <KPICard
               key={kpi.label}
@@ -131,174 +168,247 @@ export default function MarketOverviewPage() {
         <EmptyState title="No market pulse data available" />
       )}
 
-      {/* Grid Charts Row with refined proportions & readability */}
-      <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2 xl:grid-cols-3">
-        {/* 1. Contract Distribution */}
-        <ChartCard title="Contracts Distribution" subtitle="By contract type across all jobs" height={220}>
-          {contracts.length === 0 ? (
-            <EmptyState className="h-full border-none p-3" />
-          ) : (
-            <div className="flex flex-col h-full justify-between">
-              <ResponsiveContainer width="100%" height={150}>
-                <PieChart>
-                  <Pie
-                    data={contracts}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={48}
-                    outerRadius={68}
-                    paddingAngle={3}
-                    dataKey="count"
-                    nameKey="name"
-                  >
-                    {contracts.map((_, i) => (
-                      <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomChartTooltip suffix="jobs" />} />
-                </PieChart>
+      {/* 03 — ASYMMETRIC ANALYTICAL CHART GRID MATCHING REFERENCE */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Row 1, Left (8 cols): Historical Trend with Lake Blue Gradient Fill */}
+        <div className="col-span-12 lg:col-span-8">
+          <ChartCard
+            title="Historical Job Market Trend"
+            subtitle="Annual posting volume across Moroccan tech sectors"
+            height={250}
+          >
+            {trend.length === 0 ? (
+              <EmptyState className="h-full border-none p-3" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={trend} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="marketTrendLakeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2b59d1" stopOpacity="0.25" />
+                      <stop offset="95%" stopColor="#2b59d1" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#cecac8" strokeOpacity={0.6} vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#797776", fontFamily: "'ABC Diatype Mono', monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tickFormatter={formatCompactK}
+                    tick={{ fontSize: 11, fill: "#797776", fontFamily: "'ABC Diatype Mono', monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={40}
+                  />
+                  <Tooltip content={<CustomChartTooltip suffix="postings" />} />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#2b59d1"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#marketTrendLakeGradient)"
+                    isAnimationActive={false}
+                  />
+                </AreaChart>
               </ResponsiveContainer>
-              <div className="flex flex-wrap justify-center gap-2 pt-1">
-                {contracts.slice(0, 4).map((entry, i) => (
-                  <div key={entry.name} className="flex items-center gap-1">
-                    <div
-                      className="h-1.5 w-1.5 rounded-full"
-                      style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }}
-                    />
-                    <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                      {entry.name} ({entry.pct}%)
-                    </span>
-                  </div>
-                ))}
+            )}
+          </ChartCard>
+        </div>
+
+        {/* Row 1, Right (4 cols): Contract Distribution */}
+        <div className="col-span-12 lg:col-span-4">
+          <ChartCard
+            title="Contract Distribution"
+            subtitle="Breakdown by employment agreement type"
+            height={250}
+          >
+            {contracts.length === 0 ? (
+              <EmptyState className="h-full border-none p-3" />
+            ) : (
+              <div className="flex flex-col h-full justify-between">
+                <ResponsiveContainer width="100%" height={165}>
+                  <PieChart>
+                    <Pie
+                      data={contracts}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={48}
+                      outerRadius={72}
+                      paddingAngle={2}
+                      dataKey="count"
+                      nameKey="name"
+                      isAnimationActive={false}
+                    >
+                      {contracts.map((_, i) => (
+                        <Cell
+                          key={i}
+                          fill={DONUT_COLORS[i % DONUT_COLORS.length]}
+                          stroke="#f6f3f1"
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomChartTooltip suffix="jobs" />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex flex-wrap justify-center gap-x-3.5 gap-y-1.5 pt-3 border-t border-[#cecac8]/60">
+                  {contracts.slice(0, 4).map((entry, i) => (
+                    <div key={entry.name} className="flex items-center gap-1.5">
+                      <div
+                        className="h-2 w-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }}
+                      />
+                      <span className="text-[11px] font-mono text-[#4e4d4d]">
+                        {entry.name} <strong className="text-[#242424] font-medium">({entry.pct}%)</strong>
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </ChartCard>
+            )}
+          </ChartCard>
+        </div>
 
-        {/* 2. Yearly Posting Trend */}
-        <ChartCard title="Posting Trend Over Time" subtitle="Market postings volume by year" height={220}>
-          {trend.length === 0 ? (
-            <EmptyState className="h-full border-none p-3" />
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trend} margin={{ top: 8, right: 15, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="trendAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#161719" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#161719" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} />
-                <YAxis
-                  tickFormatter={formatCompactK}
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={38}
-                />
-                <Tooltip content={<CustomChartTooltip suffix="postings" />} />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#161719"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#trendAreaGradient)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
+        {/* Row 2, Left (4 cols): Regional Tech Hubs */}
+        <div className="col-span-12 lg:col-span-4">
+          <ChartCard
+            title="Regional Tech Hubs"
+            subtitle="Job volume concentrated across major economic zones"
+            height={250}
+          >
+            {regional.length === 0 ? (
+              <EmptyState className="h-full border-none p-3" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={regional.slice(0, 6)}
+                  layout="vertical"
+                  margin={{ top: 6, right: 20, left: 65, bottom: 6 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#cecac8" strokeOpacity={0.6} horizontal={true} vertical={false} />
+                  <XAxis
+                    type="number"
+                    tickFormatter={formatCompactK}
+                    tick={{ fontSize: 11, fill: "#797776", fontFamily: "'ABC Diatype Mono', monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ fontSize: 11, fill: "#242424", fontFamily: "'ABC Diatype Mono', monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={65}
+                  />
+                  <Tooltip content={<CustomChartTooltip suffix="jobs" />} />
+                  <Bar dataKey="value" radius={[0, 9999, 9999, 0]} barSize={14} isAnimationActive={false}>
+                    {regional.slice(0, 6).map((_, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={index === 0 ? "#2b59d1" : "#242424"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+        </div>
 
-        {/* 3. Top Regional Hubs — Clean horizontal layout with compact number formatting */}
-        <ChartCard title="Top Regional Hubs" subtitle="Job opportunities by city" height={220}>
-          {regional.length === 0 ? (
-            <EmptyState className="h-full border-none p-3" />
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={regional.slice(0, 6)} layout="vertical" margin={{ top: 6, right: 20, left: 80, bottom: 6 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" horizontal={true} vertical={false} />
-                <XAxis
-                  type="number"
-                  tickFormatter={formatCompactK}
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  tick={{ fontSize: 10, fill: "#475569" }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={80}
-                />
-                <Tooltip content={<CustomChartTooltip suffix="jobs" />} />
-                <Bar dataKey="value" fill="#06B6D4" radius={[0, 4, 4, 0]} barSize={13} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
+        {/* Row 2, Middle (3 cols): Required Education Levels */}
+        <div className="col-span-12 lg:col-span-3">
+          <ChartCard
+            title="Required Education Levels"
+            subtitle="Minimum academic prerequisites specified by recruiters"
+            height={250}
+          >
+            {education.length === 0 ? (
+              <EmptyState className="h-full border-none p-3" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={education} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#cecac8" strokeOpacity={0.6} vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 10, fill: "#797776", fontFamily: "'ABC Diatype Mono', monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tickFormatter={formatCompactK}
+                    tick={{ fontSize: 10, fill: "#797776", fontFamily: "'ABC Diatype Mono', monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={35}
+                  />
+                  <Tooltip content={<CustomChartTooltip suffix="jobs" />} />
+                  <Bar dataKey="value" radius={[9999, 9999, 0, 0]} barSize={20} isAnimationActive={false}>
+                    {education.map((_, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={index === 0 ? "#2b59d1" : index === 1 ? "#242424" : "#797776"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+        </div>
 
-        {/* 4. Education Levels */}
-        <ChartCard title="Required Education" subtitle="Minimum degree prerequisites" height={220} className="lg:col-span-1">
-          {education.length === 0 ? (
-            <EmptyState className="h-full border-none p-3" />
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={education} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} />
-                <YAxis
-                  tickFormatter={formatCompactK}
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={38}
-                />
-                <Tooltip content={<CustomChartTooltip suffix="jobs" />} />
-                <Bar dataKey="value" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
-
-        {/* 5. Top Technologies — Horizontal ranking with clear labels and compact formatting (width=90, zero 45-degree angle) */}
-        <ChartCard title="Top Demanded Tech" subtitle="Most frequently requested skills" height={220} className="lg:col-span-2">
-          {skills.length === 0 ? (
-            <EmptyState className="h-full border-none p-3" />
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={skills.slice(0, 8)}
-                layout="vertical"
-                margin={{ top: 6, right: 20, left: 90, bottom: 6 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" horizontal={true} vertical={false} />
-                <XAxis
-                  type="number"
-                  tickFormatter={formatCompactK}
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  tickFormatter={(v) => truncateLabel(v, 20)}
-                  tick={{ fontSize: 10, fill: "#475569" }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={90}
-                />
-                <Tooltip content={<CustomChartTooltip suffix="mentions" />} />
-                <Bar dataKey="value" fill="#6366F1" radius={[0, 4, 4, 0]} barSize={13} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
+        {/* Row 2, Right (5 cols): Top Demanded Technologies & Skills */}
+        <div className="col-span-12 lg:col-span-5">
+          <ChartCard
+            title="Top Demanded Technologies & Skills"
+            subtitle="Most prevalent hard skills and frameworks extracted across postings"
+            height={250}
+          >
+            {skills.length === 0 ? (
+              <EmptyState className="h-full border-none p-3" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={skills.slice(0, 8)}
+                  layout="vertical"
+                  margin={{ top: 4, right: 25, left: 80, bottom: 4 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#cecac8" strokeOpacity={0.6} horizontal={true} vertical={false} />
+                  <XAxis
+                    type="number"
+                    tickFormatter={formatCompactK}
+                    tick={{ fontSize: 10, fill: "#797776", fontFamily: "'ABC Diatype Mono', monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tickFormatter={(v) => truncateLabel(v, 18)}
+                    tick={{ fontSize: 10, fill: "#242424", fontFamily: "'ABC Diatype Mono', monospace" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={80}
+                  />
+                  <Tooltip content={<CustomChartTooltip suffix="postings" />} />
+                  <Bar dataKey="value" radius={[0, 9999, 9999, 0]} barSize={12} isAnimationActive={false}>
+                    {skills.slice(0, 8).map((_, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={index < 2 ? "#2b59d1" : "#242424"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+        </div>
       </div>
     </div>
   );
 }
+

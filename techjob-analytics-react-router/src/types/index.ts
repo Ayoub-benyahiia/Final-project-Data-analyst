@@ -213,7 +213,7 @@ export interface KPIData {
   change?: number;
   changeLabel?: string;
   icon: string;
-  color: "indigo" | "cyan" | "emerald" | "rose" | "amber";
+  color?: string;
 }
 
 export interface ChartData {

@@ -1,17 +1,34 @@
 import { Outlet } from "react-router-dom";
-import { Sidebar } from "@/modules/dashboard/components/Sidebar";
+import { SidebarProvider, useSidebar } from "@/modules/dashboard/components/Sidebar";
 import { FilterBar } from "@/modules/dashboard/components/FilterBar";
+import { cn } from "@/lib/utils";
 
-export default function DashboardLayout() {
+function DashboardContent() {
+  const { collapsed } = useSidebar();
+
   return (
-    <div className="flex min-h-screen bg-[#F4F5F8] dark:bg-[#0E0F12]">
-      <Sidebar />
-      <div className="ml-60 flex flex-1 flex-col transition-all duration-200 min-w-0">
+    <div className="relative flex min-h-screen w-full max-w-full overflow-x-hidden bg-[#f6f3f1] text-[#242424] font-mono selection:bg-[#cfdaf5] selection:text-[#2b59d1]">
+      {/* Main content area */}
+      <div
+        className={cn(
+          "relative z-10 flex flex-1 flex-col transition-all duration-200 min-w-0 w-full max-w-full overflow-x-hidden",
+          collapsed ? "lg:ml-16" : "lg:ml-64"
+        )}
+      >
         <FilterBar />
-        <main className="flex-1 p-4 md:p-5 space-y-4 max-w-[1440px] w-full mx-auto">
+        <main className="flex-1 px-4 sm:px-6 md:px-8 py-8 sm:py-10 space-y-8 sm:space-y-12 max-w-[1432px] w-full mx-auto min-w-0">
           <Outlet />
         </main>
       </div>
     </div>
   );
 }
+
+export default function DashboardLayout() {
+  return (
+    <SidebarProvider>
+      <DashboardContent />
+    </SidebarProvider>
+  );
+}
+

@@ -6,24 +6,28 @@ interface EmptyStateProps {
   description?: string;
   icon?: React.ReactNode;
   className?: string;
+  action?: React.ReactNode;
 }
 
 export function EmptyState({
   title = "No data available",
-  description = "Try adjusting your filters to see results.",
+  description = "Try adjusting your active filters to see results.",
   icon,
   className,
+  action,
 }: EmptyStateProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center",
+        "flex flex-col items-center justify-center rounded-[28px] sm:rounded-[40px] border border-dashed border-[#cecac8] bg-[#f6f3f1] p-8 sm:p-12 text-center",
         className
       )}
     >
-      {icon || <SearchX className="mb-4 h-12 w-12 text-slate-300 dark:text-slate-700" strokeWidth={1.5} />}
-      <h3 className="mb-1 text-base font-medium text-slate-700 dark:text-slate-300">{title}</h3>
-      <p className="text-sm text-slate-400 dark:text-slate-500">{description}</p>
+      {icon || <SearchX className="mb-3 h-8 w-8 text-[#797776]" strokeWidth={1.5} />}
+      <h3 className="mb-1 font-serif text-lg sm:text-xl font-normal text-[#242424] tracking-[-0.02em]">{title}</h3>
+      <p className="font-mono text-xs sm:text-sm text-[#797776] max-w-sm leading-relaxed">{description}</p>
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
+

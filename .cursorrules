@@ -2,7 +2,7 @@
 
 ## Architecture Principles
 
-This project is a **multi-layer data intelligence platform** for the Moroccan IT job market. Raw listings are scraped from ReKrute and Emploi.ma, cleaned and normalized through a Python ETL pipeline into a star schema, served via a FastAPI REST backend, and visualized in both a React dashboard and Power BI. Every layer is independently replaceable. Prefer **simple, explicit data flow** over abstraction layers — the path from CSV → API → chart should be traceable in under 30 seconds of reading. **Convention over configuration**; every file has a single, obvious home.
+This project is a **multi-layer data intelligence platform** for the Moroccan IT job market. Raw listings are scraped from ReKrute and Emploi.ma, cleaned and normalized through a Python ETL pipeline into a star schema, served via a FastAPI REST backend, and visualized in both a React dashboard and Power BI. Every layer is independently replaceable. Prefer **simple, explicit data flow** over abstraction layers — the path from Parquet → API → chart should be traceable in under 30 seconds of reading. **Convention over configuration**; every file has a single, obvious home.
 
 ---
 
@@ -23,7 +23,8 @@ This project is a **multi-layer data intelligence platform** for the Moroccan IT
 | API server | Uvicorn 0.32 |
 | Validation | Pydantic v2 |
 | Data pipeline | Python (Pandas, NumPy) — Jupyter notebooks |
-| Database format | Flat CSV files organized in star schema |
+| Database engine | DuckDB in-memory OLAP over Parquet files |
+| Data format | 13 Parquet files in star schema (10,782 job postings) |
 | Reporting | Power BI (`.pbix` files consuming star schema CSVs) |
 
 ---
@@ -32,37 +33,40 @@ This project is a **multi-layer data intelligence platform** for the Moroccan IT
 
 ### Folder Structure
 ```
-New_design/
+techjob-analytics-react-router/
 ├── src/
 │   ├── components/       # One file per React component
-│   ├── hooks/            # Custom hooks (especially React Query hooks)
-│   ├── lib/              # Library configuration (query client, etc.)
-│   ├── types.ts          # All shared TypeScript interfaces
-│   ├── data.ts           # Static/mock data and constants
-│   ├── App.tsx           # Root component (view router)
-│   ├── main.tsx          # Entry point
-│   └── index.css         # Tailwind imports + theme tokens
-├── backend/              # FastAPI application
-│   ├── main.py           # App entry + route definitions
-│   └── requirements.txt  # Python dependencies
+│   ├── modules/         # Feature modules (dashboard, etc.)
+│   │   ├── components/  # Module-specific components
+│   │   ├── hooks/       # Module-specific hooks
+│   │   └── pages/       # Module-specific pages
+│   ├── lib/             # Library configuration (API client, etc.)
+│   ├── types/           # TypeScript interfaces
+│   ├── App.tsx          # Root component (view router)
+│   └── main.tsx         # Entry point
+backend/
+├── main.py              # FastAPI application entry
+├── db.py                # DuckDB connection manager
+├── schemas/             # Pydantic models
+├── data/parquet/        # Parquet data files
+└── requirements.txt     # Python dependencies
 projet-data-maroc-tech/
-├── notebooks/            # Jupyter ETL notebooks
-└── data/                 # Raw, clean, and star_schema CSV directories
-Kimi_Agent_حذف الأعمدة (1)/  # Data science scripts + Power BI documentation
+├── notebooks/           # Jupyter ETL notebooks
+└── data/                # Raw, clean, and star_schema CSV directories
 ```
 
 ### Naming
 - **Components:** PascalCase, default export (`export default function TechJobDashboard`)
 - **Hooks:** camelCase with `use` prefix, named export (`export function useGrowthData`)
 - **Files:** camelCase for utilities and hooks (`useDashboardData.ts`), PascalCase for components (`TechJobDashboard.tsx`)
-- **Types:** PascalCase interfaces in `src/types.ts`
+- **Types:** PascalCase interfaces in `src/types/`
 - **API query keys:** camelCase strings matching the resource name (`'growthData'`, `'techRadar'`)
 
 ### Code Patterns
-- All React Query hooks live in `src/hooks/useDashboardData.ts` — do not create separate hook files for each endpoint
-- Components import types from `src/types.ts` and data from `src/data.ts` — never define shared types inside a component file
+- All React Query hooks live in module-specific hook files (e.g., `modules/dashboard/hooks/useMarketData.ts`)
+- Components import types from `src/types/` — never define shared types inside a component file
 - Path alias `@/` maps to project root — use for cross-directory imports (`@/components/Foo`), relative imports for same-directory
-- Filter state is managed at the dashboard level and passed down as props — no global state store
+- Filter state is managed via URL search params — no global state store
 
 ---
 
@@ -71,24 +75,26 @@ Kimi_Agent_حذف الأعمدة (1)/  # Data science scripts + Power BI documen
 ### Frontend
 - **No inline styles** — all styling via Tailwind utility classes defined in the theme
 - **No state management library** — React built-in state + TanStack Query is sufficient
-- **No direct API URL construction outside `useDashboardData.ts`** — all endpoints are centralized there
+- **No direct API URL construction outside `lib/api.ts`** — all endpoints are centralized there
 - **No class components** — functional components + hooks only
 - **No CSS modules, styled-components, or Emotion** — Tailwind v4 only
 - **No custom CSS class names** — the `@theme` block in `index.css` defines the full design system
 
 ### Backend
-- **No raw SQL** — the data layer is CSV + Pandas, not a relational database
-- **No database connection** — this project serves flat CSV files through FastAPI; do not add PostgreSQL, SQLite, or Supabase unless explicitly directed
-- **No ORM imports** — no SQLAlchemy, Prisma, Drizzle, or similar
+- **SQL queries through DuckDB are allowed and expected** — DuckDB is the analytical engine
+- **DuckDB uses an in-memory connection over Parquet data for zero-copy analytics**
+- **No ORM is used in production backend code** — no SQLAlchemy, Prisma, Drizzle, or similar in runtime code
+- **PostgreSQL/Supabase are not runtime dependencies** — they are migration/storage tooling only (see MIGRATION.md)
+- **Do not introduce a relational database** unless explicitly directed
 
 ### Data Pipeline
-- **No rewriting the star schema** — it is finalized (9 dims, 1 fact, 3 bridges); extend by adding rows to existing CSVs, not by restructuring
-- **No committing large CSVs to git** — data files live on disk, `.gitignore` already excludes them
+- **No rewriting the star schema** — it is finalized (9 dims, 1 fact, 3 bridges); extend by adding rows to existing Parquet files, not by restructuring
+- **No committing large Parquet files to git** — data files live on disk, `.gitignore` already excludes them
 
 ### General
 - **No `any`** — use `unknown` with type narrowing, or define an explicit interface
 - **No `// @ts-ignore` or `@ts-expect-error`** — fix the type properly
-- **No hardcoded secrets** — `GEMINI_API_KEY` and `APP_URL` are injected via `.env` at runtime
+- **No hardcoded secrets** — environment variables are injected via `.env` at runtime
 - **No npm packages outside `package.json`** — verify before importing anything new
 
 ---
@@ -98,9 +104,9 @@ Kimi_Agent_حذف الأعمدة (1)/  # Data science scripts + Power BI documen
 ### Before Implementing Anything
 1. Read `spec.md` or `requirements.md` if present at project root
 2. Read the relevant target file(s) in full before editing
-3. Check `src/hooks/useDashboardData.ts` before writing a new data-fetching hook
-4. Check `src/types.ts` before defining new interfaces
-5. Check `src/components/` before creating a new component (compose or extend first)
+3. Check `src/lib/api.ts` before writing a new API call
+4. Check `src/types/` before defining new interfaces
+5. Check existing components before creating a new component (compose or extend first)
 
 ### When Ambiguity Arises
 STOP. Present exactly **2–3 options** with concrete trade-offs:
@@ -118,4 +124,4 @@ Do NOT proceed until the user selects one.
 
 ---
 
-*Generated from codebase analysis of TechJob Analytics — grounded in actual project files, not assumptions.*
+*Updated to reflect actual runtime architecture: DuckDB + Parquet + SQL*

@@ -1,9 +1,8 @@
-"use client";
-
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { SlidersHorizontal, Search, ChevronDown, Check, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MobileMenuButton } from "@/modules/dashboard/components/Sidebar";
 import { useFilterOptions } from "@/modules/dashboard/hooks/useMarketData";
 import { CITIES, CONTRACTS, EDUCATIONS, EXP_BUCKETS } from "@/lib/data";
 
@@ -12,6 +11,7 @@ interface FilterConfig {
   label: string;
   options: string[];
   searchable?: boolean;
+  popoverWidth?: string;
 }
 
 export function FilterBar() {
@@ -24,7 +24,7 @@ export function FilterBar() {
   const [dropdownSearch, setDropdownSearch] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on click outside
+  // Close dropdown on click outside or Escape key
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -32,44 +32,61 @@ export function FilterBar() {
         setDropdownSearch("");
       }
     }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenKey(null);
+        setDropdownSearch("");
+      }
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
-  // Construct dynamic filters list
   const filterConfigs: FilterConfig[] = useMemo(() => [
     {
       key: "city",
       label: "City",
       options: dynamicOptions?.cities || CITIES,
       searchable: true,
+      popoverWidth: "w-[280px]",
     },
     {
       key: "contract",
       label: "Contract",
       options: dynamicOptions?.contracts || CONTRACTS,
+      popoverWidth: "w-[240px]",
     },
     {
       key: "education",
       label: "Education",
       options: dynamicOptions?.educations || EDUCATIONS,
+      popoverWidth: "w-[260px]",
     },
     {
       key: "expBucket",
       label: "Experience",
       options: dynamicOptions?.experiences || EXP_BUCKETS,
+      popoverWidth: "w-[260px]",
     },
     {
       key: "technology",
       label: "Hard Skills",
       options: dynamicOptions?.hard_skills || [],
       searchable: true,
+      popoverWidth: "w-[320px]",
     },
     {
       key: "soft_skills",
       label: "Soft Skills",
       options: dynamicOptions?.soft_skills || [],
       searchable: true,
+      popoverWidth: "w-[320px]",
     },
   ], [dynamicOptions]);
 
@@ -88,7 +105,7 @@ export function FilterBar() {
 
   const getSelected = (key: string): string[] => {
     const raw = searchParams.get(key);
-    return raw ? raw.split(",") : [];
+    return raw ? raw.split(",").map((s) => s.trim()).filter(Boolean) : [];
   };
 
   const toggleFilter = (key: string, option: string) => {
@@ -99,45 +116,62 @@ export function FilterBar() {
     navigate(`${location.pathname}?${createQueryString(key, next)}`);
   };
 
-  const clearFilterGroup = (key: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const clearFilterGroup = (key: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     navigate(`${location.pathname}?${createQueryString(key, [])}`);
   };
 
   const clearAllFilters = () => {
     navigate(location.pathname);
     setOpenKey(null);
+    setDropdownSearch("");
   };
 
-  const hasFilters = filterConfigs.some((f) => getSelected(f.key).length > 0);
+  const totalActiveFiltersCount = filterConfigs.reduce(
+    (acc, f) => acc + getSelected(f.key).length,
+    0
+  );
+  const hasFilters = totalActiveFiltersCount > 0;
 
   return (
     <header
       ref={containerRef}
-      className="sticky top-0 z-30 border-b border-slate-200/70 dark:border-slate-800/70 bg-white/95 dark:bg-[#161719]/95 backdrop-blur-md px-5 py-2"
+      className="sticky top-0 z-30 border-b border-[#cecac8] bg-[#f6f3f1]/95 backdrop-blur-[4px] px-4 sm:px-6 py-3 w-full select-none font-mono"
     >
-      <div className="flex items-center justify-between gap-3 max-w-[1440px] mx-auto">
-        {/* Left: Filter Label & Quiet Modest Controls */}
-        <div className="flex flex-1 flex-wrap items-center gap-1.5">
-          <div className="flex items-center gap-1.5 mr-1.5 text-slate-500 dark:text-slate-400">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-slate-400" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              Filters
-            </span>
+      <div className="flex items-center justify-between gap-3 max-w-[1432px] mx-auto w-full min-w-0">
+        {/* Mobile drawer toggle button */}
+        <MobileMenuButton />
+
+        {/* Scrollable Filter Pills Rail */}
+        <div className="flex flex-1 items-center gap-2.5 overflow-x-auto lg:overflow-visible no-scrollbar min-w-0 py-0.5">
+          {/* Global Filter Indicator Pill */}
+          <div className="flex items-center gap-2 rounded-full border border-[#cecac8] bg-[#f6f3f1] px-4 h-10 text-xs font-mono text-[#242424] flex-shrink-0 select-none">
+            <SlidersHorizontal className="h-3.5 w-3.5 text-[#242424] stroke-[2]" />
+            <span className="uppercase tracking-wider">Filters</span>
+            {hasFilters && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2b59d1] text-white px-1.5 text-[10px] font-mono font-medium ml-1">
+                {totalActiveFiltersCount}
+              </span>
+            )}
           </div>
 
+          {/* Individual Filter Dropdown Buttons */}
           {filterConfigs.map((filter) => {
             const selected = getSelected(filter.key);
             const isOpen = openKey === filter.key;
+            const isSelected = selected.length > 0;
 
             const filteredOptions = filter.options.filter((opt) =>
               String(opt ?? "").toLowerCase().includes(dropdownSearch.toLowerCase())
             );
 
             return (
-              <div key={filter.key} className="relative">
+              <div key={filter.key} className="relative flex-shrink-0">
                 <button
                   type="button"
+                  aria-haspopup="dialog"
+                  aria-expanded={isOpen}
+                  aria-label={`${filter.label} filter`}
                   onClick={() => {
                     if (isOpen) {
                       setOpenKey(null);
@@ -148,125 +182,143 @@ export function FilterBar() {
                     }
                   }}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs transition-all select-none",
-                    selected.length > 0
-                      ? "border-slate-900 bg-slate-900 text-white font-medium shadow-sm dark:border-[#D4F84B] dark:bg-[#D4F84B] dark:text-[#161719]"
-                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1E1F24] text-slate-600 dark:text-slate-300 font-medium hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/80",
-                    isOpen && "ring-1 ring-slate-900/20 dark:ring-white/20 border-slate-900 dark:border-white"
+                    "flex items-center gap-2 rounded-full border h-10 px-4 text-xs font-mono transition-all select-none",
+                    isSelected
+                      ? "border-[#a0b5eb] bg-[#cfdaf5] text-[#2b59d1] font-medium"
+                      : "border-[#cecac8] bg-[#f6f3f1] text-[#4e4d4d] hover:border-[#242424] hover:text-[#242424]",
+                    isOpen && "border-[#242424] ring-1 ring-[#242424] text-[#242424]"
                   )}
                 >
-                  <span>{filter.label}</span>
+                  <span className="tracking-tight">{filter.label}</span>
 
-                  {selected.length > 0 && (
-                    <span
-                      className={cn(
-                        "flex h-3.5 min-w-3.5 items-center justify-center rounded text-[9px] font-bold px-1",
-                        "bg-[#D4F84B] text-[#161719] dark:bg-[#161719] dark:text-white"
-                      )}
-                    >
+                  {isSelected && (
+                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#2b59d1] text-white px-1.5 text-[10px] font-mono">
                       {selected.length}
                     </span>
                   )}
 
                   <ChevronDown
                     className={cn(
-                      "h-3 w-3 transition-transform duration-150",
-                      isOpen && "rotate-180",
-                      selected.length > 0 ? "text-slate-300 dark:text-slate-700" : "text-slate-400"
+                      "h-3.5 w-3.5 transition-transform duration-200 text-[#797776]",
+                      isSelected && "text-[#2b59d1]",
+                      isOpen && "rotate-180 text-[#242424]"
                     )}
                   />
                 </button>
 
-                {/* Dropdown Menu */}
+                {/* Floating Filter Popover */}
                 {isOpen && (
-                  <div className="absolute left-0 top-full mt-1.5 w-60 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1E1F24] p-2.5 shadow-xl z-50 animate-[fadeIn_0.12s_ease-out]">
-                    {/* Header with Clear button */}
-                    <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100 dark:border-slate-800 text-[11px]">
-                      <span className="font-bold text-slate-800 dark:text-slate-200">
-                        {filter.label} <span className="text-slate-400 font-normal">({filter.options.length})</span>
-                      </span>
-                      {selected.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={(e) => clearFilterGroup(filter.key, e)}
-                          className="text-[10px] text-slate-900 dark:text-[#D4F84B] hover:underline font-bold"
-                        >
-                          Clear ({selected.length})
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Search Input for Searchable Lists */}
-                    {filter.searchable && filter.options.length > 6 && (
-                      <div className="relative mb-1.5">
-                        <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-400" />
-                        <input
-                          type="text"
-                          placeholder={`Search ${filter.label.toLowerCase()}...`}
-                          value={dropdownSearch}
-                          onChange={(e) => setDropdownSearch(e.target.value)}
-                          autoFocus
-                          className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#161719] py-1 pl-7 pr-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-slate-900 dark:focus:border-[#D4F84B] focus:outline-none"
-                        />
+                  <div
+                    className={cn(
+                      "absolute left-0 top-full z-50 mt-2 rounded-[28px] border border-[#cecac8] bg-[#f6f3f1] p-4 text-[#242424] shadow-ambient animate-slide-up font-mono",
+                      filter.popoverWidth || "w-[280px]"
+                    )}
+                  >
+                    {/* Instant Search Bar */}
+                    {filter.searchable && (
+                      <div className="mb-3">
+                        <div className="relative flex items-center">
+                          <Search className="absolute left-3.5 h-3.5 w-3.5 text-[#797776]" />
+                          <input
+                            type="text"
+                            placeholder={`Search ${filter.label.toLowerCase()}...`}
+                            value={dropdownSearch}
+                            onChange={(e) => setDropdownSearch(e.target.value)}
+                            className="w-full rounded-full border border-[#cecac8] bg-[#f6f3f1] py-2 pl-9 pr-4 text-xs text-[#242424] placeholder:text-[#797776] focus:border-[#242424] focus:outline-none transition-all font-mono"
+                            autoFocus
+                          />
+                        </div>
                       </div>
                     )}
 
-                    {/* Scrollable Options List */}
-                    <div className="max-h-52 overflow-y-auto custom-scrollbar space-y-0.5 pr-1">
+                    {/* Scrollable Checkbox Options List */}
+                    <div className="max-h-60 overflow-y-auto custom-scrollbar space-y-1 pr-1">
                       {filteredOptions.length === 0 ? (
-                        <div className="py-3 text-center text-xs text-slate-400">
-                          No matching options
-                        </div>
+                        <p className="p-4 text-center text-xs text-[#797776] italic">No matching options</p>
                       ) : (
-                        filteredOptions.map((option) => {
-                          const isSelected = selected.includes(option);
+                        filteredOptions.map((opt) => {
+                          const optStr = String(opt ?? "");
+                          const isOptSelected = selected.includes(optStr);
                           return (
                             <button
-                              key={option}
+                              key={optStr}
                               type="button"
-                              onClick={() => toggleFilter(filter.key, option)}
+                              onClick={() => toggleFilter(filter.key, optStr)}
                               className={cn(
-                                "flex w-full items-center gap-2 rounded-md px-2 py-1 text-xs text-left transition-colors",
-                                isSelected
-                                  ? "bg-slate-100 dark:bg-white/[0.08] text-slate-900 dark:text-white font-medium"
-                                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04]"
+                                "flex w-full items-center gap-2.5 rounded-full px-3 py-2 text-xs transition-colors text-left group select-none font-mono",
+                                isOptSelected
+                                  ? "bg-[#cfdaf5] text-[#2b59d1] font-medium"
+                                  : "text-[#4e4d4d] hover:bg-[#cecac8]/25 hover:text-[#242424]"
                               )}
                             >
-                              <div
+                              {/* Custom Styled Checkbox Pill */}
+                              <span
                                 className={cn(
-                                  "flex h-3.5 w-3.5 items-center justify-center rounded border transition-colors flex-shrink-0",
-                                  isSelected
-                                    ? "border-slate-900 bg-slate-900 text-[#D4F84B] dark:border-[#D4F84B] dark:bg-[#D4F84B] dark:text-[#161719]"
-                                    : "border-slate-300 dark:border-slate-700 bg-white dark:bg-[#161719]"
+                                  "flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border transition-colors",
+                                  isOptSelected
+                                    ? "bg-[#2b59d1] border-[#2b59d1] text-white"
+                                    : "border-[#cecac8] bg-[#f6f3f1] group-hover:border-[#242424]"
                                 )}
                               >
-                                {isSelected && <Check className="h-2.5 w-2.5 stroke-[3]" />}
-                              </div>
-                              <span className="truncate">{option}</span>
+                                {isOptSelected && <Check className="h-2.5 w-2.5 stroke-[3]" />}
+                              </span>
+
+                              <span className="truncate flex-1">{optStr}</span>
                             </button>
                           );
                         })
                       )}
+                    </div>
+
+                    {/* Popover Footer: Count + Actions */}
+                    <div className="mt-3 flex items-center justify-between border-t border-[#cecac8]/60 pt-3 px-1">
+                      <span className="text-[11px] font-mono text-[#797776]">
+                        {selected.length} selected
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        {selected.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => clearFilterGroup(filter.key)}
+                            className="rounded-full px-3 py-1 text-xs font-mono text-[#797776] hover:bg-[#cecac8]/30 hover:text-[#242424] transition-colors"
+                          >
+                            Clear
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenKey(null);
+                            setDropdownSearch("");
+                          }}
+                          className="rounded-full bg-[#242424] px-4 py-1.5 text-xs font-mono text-[#f6f3f1] hover:bg-[#4e4d4d] transition-colors"
+                        >
+                          Done
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
             );
           })}
-        </div>
 
-        {/* Right: Clear All Action */}
-        {hasFilters && (
-          <button
-            type="button"
-            onClick={clearAllFilters}
-            className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1E1F24] px-2.5 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors shadow-sm"
-          >
-            <RotateCcw className="h-3 w-3" />
-            <span>Clear All</span>
-          </button>
-        )}
+          {/* Clear All Button */}
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="flex items-center gap-1.5 rounded-full border border-[#cecac8] bg-[#f6f3f1] px-4 h-10 text-xs font-mono text-[#797776] hover:text-[#242424] hover:border-[#242424] transition-all flex-shrink-0 select-none"
+              title="Reset all filters to dataset baseline"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );
 }
+
