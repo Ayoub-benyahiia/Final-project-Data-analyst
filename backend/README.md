@@ -1,6 +1,6 @@
 ---
 title: TechJob Analytics Backend API
-emoji: 🇲🇦
+emoji: 📊
 colorFrom: blue
 colorTo: indigo
 sdk: gradio
