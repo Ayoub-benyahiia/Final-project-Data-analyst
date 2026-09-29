@@ -1,0 +1,40 @@
+# =============================================================================
+# TECHJOB ANALYTICS — FASTAPI BACKEND DOCKERFILE (Hugging Face Spaces)
+# =============================================================================
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install build essentials if needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy Parquet data (production runtime data)
+COPY data/parquet /app/data/parquet
+
+# Copy backend application code
+COPY . /app
+
+# Create non-root user (required by HF Spaces)
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# HF Spaces uses port 7860 by default
+ENV PORT=7860
+EXPOSE 7860
+
+# Environment variables for production
+ENV ENVIRONMENT=production
+ENV LOG_LEVEL=INFO
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:7860/health || exit 1
+
+# Run uvicorn server
+CMD ["sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-7860}"]
