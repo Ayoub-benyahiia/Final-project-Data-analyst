@@ -3,20 +3,38 @@
   TechJob Analytics — HuggingFace Spaces Entry Point (Gradio SDK)
 =============================================================================
   Mounts the full FastAPI backend alongside an interactive Gradio UI.
-  The Gradio SDK is 100% FREE on Hugging Face Spaces (no Docker required).
 =============================================================================
 """
 
 import json
 import os
 import gradio as gr
+from fastapi.responses import RedirectResponse
 from main import app as fastapi_app
 from schemas import GlobalFilterSchema, StackMatcherRequest
 from services.market_service import get_market_pulse
 from services.matcher_service import analyze_stack
 from services.skills_service import get_skill_pairings
 
+# ZeroGPU Decorator (required by Hugging Face ZeroGPU environment)
+try:
+    import spaces
+except Exception:
+    class spaces:
+        @staticmethod
+        def GPU(fn=None, *args, **kwargs):
+            if fn is not None:
+                return fn
+            def decorator(f):
+                return f
+            return decorator
 
+@spaces.GPU
+def zero_gpu_worker():
+    return None
+
+
+@spaces.GPU
 def test_pulse():
     try:
         data = get_market_pulse()
@@ -25,6 +43,7 @@ def test_pulse():
         return f"Error: {str(e)}"
 
 
+@spaces.GPU
 def test_matcher(skills_input):
     try:
         if not skills_input:
@@ -37,6 +56,7 @@ def test_matcher(skills_input):
         return f"Error: {str(e)}"
 
 
+@spaces.GPU
 def test_pairings(tech_input):
     try:
         tech = tech_input.strip() if tech_input else "React"
@@ -54,12 +74,10 @@ with gr.Blocks(title="TechJob Analytics API") as demo:
         **Moroccan IT Job Market Intelligence Platform (Vectorized DuckDB OLAP)**
 
         > Serving **10,782 normalized IT job postings** across **13 Parquet tables** with sub-15ms execution times.
-        > This backend is powered by FastAPI and mounted inside a free **Hugging Face Gradio Space**.
 
         ---
         ### ⚡ Quick Navigation
         - 📖 **Interactive Swagger UI:** [`/docs`](/docs)
-        - 📄 **ReDoc Documentation:** [`/redoc`](/redoc)
         - 🩺 **Health Check:** [`/health`](/health)
         ---
         """
@@ -69,7 +87,7 @@ with gr.Blocks(title="TechJob Analytics API") as demo:
         with gr.TabItem("📋 API Catalog"):
             gr.Markdown(
                 """
-                ### Core REST Endpoints (Base URL: `https://<your-space>.hf.space`)
+                ### Core REST Endpoints (Base URL: `https://silentgoat-techjob-backend.hf.space`)
 
                 | Method | Endpoint | Description |
                 | :--- | :--- | :--- |
@@ -119,17 +137,50 @@ with gr.Blocks(title="TechJob Analytics API") as demo:
                     pairings_output = gr.Code(label="Pairings Result JSON", language="json")
                     pairings_btn.click(test_pairings, inputs=[pairings_input], outputs=[pairings_output])
 
-    gr.Markdown(
-        """
-        ---
-        *© 2026 TechJob Analytics · PFE Data Engineering & Decision Systems*
-        """
-    )
+    demo.load(zero_gpu_worker, inputs=None, outputs=None)
 
-# ── Mount Gradio at root "/" while preserving all FastAPI routes (/docs, /api/v1/...) ──
-app = gr.mount_gradio_app(fastapi_app, demo, path="/")
+
+# ── Patch App.create_app so FastAPI routers & CORS are injected on creation & launch ──
+from fastapi.middleware.cors import CORSMiddleware
+from routers.health import router as health_router
+from routers.market import router as market_router
+from routers.matcher import router as matcher_router
+from routers.skills import router as skills_router
+
+_original_create_app = gr.routes.App.create_app
+
+def _patched_create_app(*args, **kwargs):
+    created_app = _original_create_app(*args, **kwargs)
+    created_app.include_router(health_router)
+    created_app.include_router(market_router)
+    created_app.include_router(skills_router)
+    created_app.include_router(matcher_router)
+    created_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    return created_app
+
+gr.routes.App.create_app = _patched_create_app
+
+# Also include on the initial demo.app instance
+demo.app.include_router(health_router)
+demo.app.include_router(market_router)
+demo.app.include_router(skills_router)
+demo.app.include_router(matcher_router)
+
+app = demo.app
 
 if __name__ == "__main__":
-    import uvicorn
-    port = int(os.getenv("PORT", 7860))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    demo.queue().launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        ssr_mode=False,
+        show_error=True
+    )
+
+
+
