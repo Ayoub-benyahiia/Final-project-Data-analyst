@@ -95,15 +95,17 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
+const API_BASE = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
 // ── 0. FILTER OPTIONS (Dynamic Star Schema Options) ──
 export async function fetchFilterOptions(): Promise<FilterOptionsResponse> {
-  const res = await fetch("/api/v1/filters/options");
+  const res = await fetch(`${API_BASE}/api/v1/filters/options`);
   return handleResponse<FilterOptionsResponse>(res);
 }
 
 // ── 1. MARKET PULSE (Page 1 KPIs) ──
 export async function fetchMarketPulse(): Promise<MarketPulseResponse> {
-  const res = await fetch("/api/v1/market-pulse");
+  const res = await fetch(`${API_BASE}/api/v1/market-pulse`);
   return handleResponse<MarketPulseResponse>(res);
 }
 
@@ -112,7 +114,7 @@ export async function fetchMarketOverview(
   filters?: GlobalFilterParams | FilterState | null
 ): Promise<MarketOverviewResponse> {
   const query = buildFilterQuery(filters);
-  const res = await fetch(`/api/v1/market-overview${query}`);
+  const res = await fetch(`${API_BASE}/api/v1/market-overview${query}`);
   return handleResponse<MarketOverviewResponse>(res);
 }
 
@@ -121,7 +123,7 @@ export async function fetchDetailedAnalysis(
   filters?: GlobalFilterParams | FilterState | null
 ): Promise<MarketAnalysisResponse> {
   const query = buildFilterQuery(filters);
-  const res = await fetch(`/api/v1/market-analysis${query}`);
+  const res = await fetch(`${API_BASE}/api/v1/market-analysis${query}`);
   return handleResponse<MarketAnalysisResponse>(res);
 }
 
@@ -131,7 +133,7 @@ export async function fetchStackMatcher(
   filters?: GlobalFilterParams | FilterState | null
 ): Promise<StackMatcherResponse> {
   const query = buildFilterQuery(filters);
-  const res = await fetch(`/api/v1/matcher/analyze${query}`, {
+  const res = await fetch(`${API_BASE}/api/v1/matcher/analyze${query}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -147,18 +149,18 @@ export async function fetchSkillPairings(
   filters?: GlobalFilterParams | FilterState | null
 ): Promise<SkillPairingsResponse> {
   const query = buildFilterQuery(filters, { skill: skill || "React" });
-  const res = await fetch(`/api/v1/skills/pairings${query}`);
+  const res = await fetch(`${API_BASE}/api/v1/skills/pairings${query}`);
   return handleResponse<SkillPairingsResponse>(res);
 }
 
 // ── 6. SKILLS LIST (Page 3 & 4 Autocomplete / Chips) ──
 export async function fetchSkillsList(): Promise<SkillListItem[]> {
-  const res = await fetch("/api/v1/skills/list");
+  const res = await fetch(`${API_BASE}/api/v1/skills/list`);
   return handleResponse<SkillListItem[]>(res);
 }
 
 // ── 7. SKILLS CATALOG (Page 5) ──
 export async function fetchSkillsCatalog(): Promise<SkillsCatalogResponse> {
-  const res = await fetch("/api/v1/skills/catalog");
+  const res = await fetch(`${API_BASE}/api/v1/skills/catalog`);
   return handleResponse<SkillsCatalogResponse>(res);
 }

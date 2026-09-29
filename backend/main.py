@@ -106,33 +106,18 @@ def _parse_origins(env_val: Optional[str]) -> List[str]:
 raw_origins = os.getenv("ALLOWED_ORIGINS") or os.getenv("CORS_ORIGINS")
 
 if raw_origins == "*":
-    if ENVIRONMENT in ["development", "test"]:
-        allowed_origins = ["*"]
-        allow_credentials = False  # Wildcard is incompatible with credentials
-        logger.warning("CORS set to wildcard (development/test mode only, credentials disabled)")
-    else:
-        logger.warning("CORS wildcard not allowed in production. Using empty allowed origins.")
-        allowed_origins = []
-        allow_credentials = True
+    allowed_origins = ["*"]
+    allow_credentials = False
+    logger.info("CORS set to wildcard (*), allow_credentials=False")
 elif raw_origins:
     allowed_origins = _parse_origins(raw_origins)
     allow_credentials = True
     logger.info(f"CORS configured for origins: {allowed_origins}")
 else:
-    # Default behavior when no origins specified
-    if ENVIRONMENT in ["development", "test"]:
-        allowed_origins = [
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:5173",
-        ]
-        allow_credentials = True
-        logger.info(f"CORS defaulting to local development origins: {allowed_origins}")
-    else:
-        allowed_origins = []
-        allow_credentials = True
-        logger.warning("No ALLOWED_ORIGINS set in production mode")
+    # Public analytical API default: allow all origins for seamless frontend integration
+    allowed_origins = ["*"]
+    allow_credentials = False
+    logger.info("CORS defaulting to wildcard (*) for frontend accessibility")
 
 app.add_middleware(
     CORSMiddleware,
