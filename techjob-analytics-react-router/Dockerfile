@@ -1,7 +1,7 @@
 # =============================================================================
-# TECHJOB ANALYTICS — FRONTEND DOCKERFILE (PRODUCTION)
+# TECHJOB ANALYTICS — FRONTEND DOCKERFILE (KOYEB PRODUCTION)
 # =============================================================================
-# Multi-stage build for production-optimized nginx + Vite static asset serving
+# Multi-stage build: Vite build → Nginx with dynamic backend URL via envsubst
 # =============================================================================
 
 # Stage 1: Build the React application
@@ -26,15 +26,19 @@ FROM nginx:alpine
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx template (uses ${BACKEND_URL} placeholder)
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
-# Expose port 80
-EXPOSE 80
+# Koyeb uses port 8000 by default, but we configure 8080 for flexibility
+EXPOSE 8080
+
+# Default backend URL (overridden by Koyeb env variable)
+ENV BACKEND_URL=http://localhost:8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/healthz || exit 1
 
-# Start nginx
+# nginx:alpine image auto-runs envsubst on /etc/nginx/templates/*.template
+# and outputs to /etc/nginx/conf.d/ — so BACKEND_URL gets injected automatically
 CMD ["nginx", "-g", "daemon off;"]

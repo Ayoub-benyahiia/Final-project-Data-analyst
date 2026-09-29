@@ -24,7 +24,7 @@ COPY . /app
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Set default port
+# Koyeb injects PORT env var automatically (default 8000)
 ENV PORT=8000
 EXPOSE 8000
 
